@@ -9,6 +9,7 @@ auxdata/kupfer-mimetypes.xml.in
 [type: gettext/glade] data/credentials_dialog.ui
 [type: gettext/glade] data/progress_dialog.ui
 [type: gettext/glade] data/getkey_dialog.ui
+[type: gettext/glade] data/user_actions.ui
 extras/kupfer_provider.py
 
 
@@ -122,6 +123,7 @@ kupfer/plugin/tracker.py
 kupfer/plugin/tracker1.py
 kupfer/plugin/truecrypt.py
 kupfer/plugin/tsclient.py
+kupfer/plugin/user_actions.py
 kupfer/plugin/vinagre.py
 kupfer/plugin/vim.py
 kupfer/plugin/virtualbox/__init__.py
