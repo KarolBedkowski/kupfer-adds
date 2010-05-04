@@ -177,8 +177,8 @@ class SystemServicesSource(Source, FilesystemWatchMixin):
 	def __init__(self, name=_("System Services")):
 		Source.__init__(self, name)
 
-	def is_dynamic(self):
-		return True
+	def initialize(self):
+		__kupfer_settings__.connect_settings_changed_cb(self._on_settings_changed)
 
 	def get_items(self):
 		if not __kupfer_settings__['services']:
@@ -201,5 +201,7 @@ class SystemServicesSource(Source, FilesystemWatchMixin):
 	def provides(self):
 		yield Service
 
+	def _on_settings_changed(self, settings, key, value):
+		self.mark_for_update()
 
 

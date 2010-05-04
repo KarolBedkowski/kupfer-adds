@@ -432,6 +432,7 @@ class PicasaUsersSource(Source):
 	def initialize(self):
 		# fill loader cache by source cache
 		PicasaDataCache.data = self.cached_items or []
+		__kupfer_settings__.connect_settings_changed_cb(self._on_settings_changed)
 
 	def get_items(self):
 		if is_plugin_configured():
@@ -455,6 +456,9 @@ class PicasaUsersSource(Source):
 
 	def get_icon_name(self):
 		return "picasa"
+
+	def _on_settings_changed(self, settings, key, value):
+		self.mark_for_update()
 
 
 class PicasaAlbumSource(Source):
