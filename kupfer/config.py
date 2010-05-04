@@ -112,3 +112,7 @@ def save_config_file(filename):
 		return None
 	filepath = os.path.join(direc, filename)
 	return filepath
+
+def get_config_paths():
+	'''Return iterator to config paths'''
+	return base.load_config_paths(PACKAGE_NAME)
