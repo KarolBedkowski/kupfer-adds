@@ -423,6 +423,11 @@ class ExtendedSetting(object):
 		plugin/key (string)'''
 		return None
 
+	@classmethod
+	def create_default(cls):
+		''' Create configuration option with default values '''
+		return cls()
+
 
 class UserNamePassword(ExtendedSetting):
 	''' Configuration type for storing username/password values.
