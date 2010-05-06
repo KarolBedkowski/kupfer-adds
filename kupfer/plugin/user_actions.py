@@ -4,7 +4,7 @@ from __future__ import with_statement
 __kupfer_name__ = _("User Actions")
 __kupfer_action_generators__ = ("UserActionsGenerator", )
 __description__ = _("User defined actions")
-__version__ = "2010-05-05"
+__version__ = "2010-05-06"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 
@@ -51,8 +51,8 @@ Fields:
 
 import re
 import os.path
-import subprocess
 import ConfigParser
+import shlex
 
 import gtk
 import gobject
@@ -60,6 +60,8 @@ import gobject
 from kupfer import utils, pretty
 from kupfer import config, version
 from kupfer import plugin_support
+from kupfer import commandexec
+from kupfer import kupferstring
 from kupfer.core.settings import ExtendedSetting
 from kupfer.obj.base import ActionGenerator, Action, Source
 from kupfer.obj import objects
@@ -260,22 +262,37 @@ class UserAction(Action):
 			except TypeError:
 				return
 		if self.gather_result:
-			proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-			out, _err = proc.communicate()
-			if self.gather_result == 'url':
-				objs = [objects.UrlLeaf(iout) for iout in out.split()]
-			elif self.gather_result == 'file':
-				objs = [objects.FileLeaf(iout) for iout in out.split()]
-			elif self.gather_result == 'one-text':
-				objs = (objects.TextLeaf(out), )
-			else:
-				objs = [objects.TextLeaf(iout) for iout in out.split()]
-			return UserActionResultSource(objs)
+			try:
+				s_str = cmd.encode("UTF-8")
+				argv = [kupferstring.tounicode(t) for t in shlex.split(s_str)]
+			except ValueError:
+				argv = cmd.split(None, 1) if " " in cmd else [cmd]
+			ctx = commandexec.DefaultActionExecutionContext()
+			token = ctx.get_async_token()
+			acom = utils.AsyncCommand(argv, self.finish_callback, 15)
+			acom.token = token
 		else:
 			utils.launch_commandline(cmd, self.name, self.launch_in_terminal)
 
-	def is_factory(self):
-		return self.gather_result is not None
+	def finish_callback(self, acommand, output, stderr):
+		ctx = commandexec.DefaultActionExecutionContext()
+		out = kupferstring.fromlocale(output)
+		if self.gather_result == 'url':
+			objs = [objects.UrlLeaf(iout) for iout in out.split()]
+		elif self.gather_result == 'file':
+			objs = [objects.FileLeaf(iout) for iout in out.split()]
+		elif self.gather_result == 'one-text':
+			objs = (objects.TextLeaf(out), )
+		else:
+			objs = [objects.TextLeaf(iout) for iout in out.split()]
+		if objs:
+			if len(objs) == 1:
+				ctx.register_late_result(acommand.token, objs[0])
+			else:
+				result = UserActionResultSource(objs)
+				leaf = objects.SourceLeaf(result,
+						_("%s Action Result") % self.name)
+				ctx.register_late_result(acommand.token, leaf)
 
 	def get_description(self):
 		return self.description
