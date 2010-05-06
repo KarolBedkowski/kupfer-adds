@@ -3,11 +3,13 @@ __kupfer_name__ = _("Google Picasa")
 __kupfer_sources__ = ("PicasaUsersSource", )
 __kupfer_actions__ = ('UploadFileToPicasa', 'UploadDirToPicasa')
 __description__ = _("Show albums and upload files to Picasa")
-__version__ = "2010-04-06"
+__version__ = "2011-04-27"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 import os.path
 import time
+
+import gtk
 
 import gdata.service
 import gdata.photos.service
@@ -20,6 +22,31 @@ from kupfer.ui.progress_dialog import ProgressDialogController
 from kupfer import kupferstring
 from kupfer import utils
 from kupfer import task
+from kupfer.core.jsonsettings import JsonExtendedSetting
+from kupfer.ui.plugin_conf_dialog import PluginConfDialogController
+
+
+class PluginSettings(JsonExtendedSetting):
+	''' Configuration - list of serives to show in browser.'''
+	_preserve_attr = ('users', )
+
+	def __init__(self, confobj=None):
+		self.users = confobj.users if confobj else []
+
+	def dialog(self, parent_widget):
+		contr = PluginConfDialogController(parent_widget, _("User list"))
+		contr.add_header(_('<span weight="bold" size="larger">Enter user names</span>'
+			'\nPlease enter one user name per line.'))
+		buff = gtk.TextBuffer()
+		textview = gtk.TextView(buff)
+		textview.show()
+		contr.add_scrolled_wnd(textview)
+		buff.set_text('\n'.join(self.users))
+		result =  contr.run()
+		if result:
+			self.users = buff.get_text(*buff.get_bounds()).split()
+		return result
+
 
 plugin_support.check_keyring_support()
 
@@ -32,9 +59,9 @@ __kupfer_settings__ = plugin_support.PluginSettings(
 	},
 	{
 		'key': 'showusers',
-		'label': _('Users to show: (,-separated)'),
-		'type': str,
-		'value': '',
+		'label': _('Set list of users to load'),
+		'type': PluginSettings,
+		'value': None,
 	},
 	{
 		'key': 'loadicons',
@@ -79,7 +106,7 @@ class UploadTask(task.ThreadTask):
 	def add_files_to_new_album(self, files, album_name):
 		''' create new album and upload files.
 		@files: list of local files (full path)
-		@album_name: new album name 
+		@album_name: new album name
 		'''
 		self._files_to_upload.append((files, None, album_name))
 		self._files_albums_count += len(files) + 1
@@ -193,8 +220,7 @@ class PicasaDataCache():
 		pusers = []
 		try:
 			user = __kupfer_settings__['userpass'].username
-			show_users = (__kupfer_settings__['showusers'] or '')
-			user_names = [U.strip() for U in show_users.split(',') if U.strip()]
+			user_names = __kupfer_settings__['showusers'].users
 
 			if user not in user_names:
 				user_names.append(user)
@@ -408,12 +434,7 @@ class PicasaUsersSource(Source):
 	def initialize(self):
 		# fill loader cache by source cache
 		PicasaDataCache.data = self.cached_items or []
-		__kupfer_settings__.connect("plugin-setting-changed", self._changed)
-
-	def _changed(self, settings, key, value):
-		if key == "userpass":
-			PicasaDataCache.data = []
-			self.mark_for_update()
+		__kupfer_settings__.connect_settings_changed_cb(self._on_settings_changed)
 
 	def get_items(self):
 		if is_plugin_configured():
@@ -437,6 +458,9 @@ class PicasaUsersSource(Source):
 
 	def get_icon_name(self):
 		return "picasa"
+
+	def _on_settings_changed(self, settings, key, value):
+		self.mark_for_update()
 
 
 class PicasaAlbumSource(Source):
