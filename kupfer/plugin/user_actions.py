@@ -4,7 +4,7 @@ from __future__ import with_statement
 __kupfer_name__ = _("User Actions")
 __kupfer_action_generators__ = ("UserActionsGenerator", )
 __description__ = _("User defined actions")
-__version__ = "2010-05-06"
+__version__ = "2010-05-08"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 
@@ -379,6 +379,8 @@ class UserActionsGenerator(ActionGenerator):
 def load_actions():
 	"""docstring for load_actions"""
 	config_file = config.get_config_file('user_actions.cfg')
+	if not config_file or not os.path.isfile(config_file):
+		return
 	cfgpars = ConfigParser.SafeConfigParser(_ACTION_DEFAULTS)
 	cfgpars.read(config_file)
 	for section in cfgpars.sections():
@@ -428,4 +430,3 @@ def save_actions(actions):
 	config_file = config.get_config_file('user_actions.cfg')
 	with open(config_file, 'wb') as configfile:
 		cfgpars.write(configfile)
-
