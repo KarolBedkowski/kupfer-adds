@@ -87,7 +87,7 @@ class PluginSettings(ExtendedSetting):
 	def _create_dialog(self):
 		builder = gtk.Builder()
 		builder.set_translation_domain(version.PACKAGE_NAME)
-		ui_file = config.get_data_file("user_actions.ui")
+		ui_file = config.get_plugin_data_file(__name__, "user_actions.ui")
 		builder.add_from_file(ui_file)
 		builder.connect_signals(self)
 
