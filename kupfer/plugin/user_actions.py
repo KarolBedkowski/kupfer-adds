@@ -4,7 +4,7 @@ from __future__ import with_statement
 __kupfer_name__ = _("User Actions")
 __kupfer_action_generators__ = ("UserActionsGenerator", )
 __description__ = _("User defined actions")
-__version__ = "2010-05-08"
+__version__ = "2010-05-11"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 
@@ -427,6 +427,6 @@ def save_actions(actions):
 			filters = '|'.join('&'.join(key + '=' + val for key, val
 				in filtetitem.iteritems()) for filtetitem in action.filters)
 			cfgpars.set(action.name, 'filters', filters)
-	config_file = config.get_config_file('user_actions.cfg')
+	config_file = config.save_config_file('user_actions.cfg')
 	with open(config_file, 'wb') as configfile:
 		cfgpars.write(configfile)
