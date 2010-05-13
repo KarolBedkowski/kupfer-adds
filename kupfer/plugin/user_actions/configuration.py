@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import with_statement
 
-__version__ = "2010-05-12"
+__version__ = "2010-05-13"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 import operator
@@ -86,6 +86,11 @@ class DialogSelectActions:
 		idx = self.store.get_value(it, 1)
 		self._edit_action(idx)
 
+	def on_action_list_move_cursor(self, treeselection):
+		record_selected = treeselection.count_selected_rows() > 0
+		self._btn_del.set_sensitive(record_selected)
+		self._btn_edit.set_sensitive(record_selected)
+
 	def _create_dialog(self):
 		builder = gtk.Builder()
 		builder.set_translation_domain(version.PACKAGE_NAME)
@@ -97,11 +102,14 @@ class DialogSelectActions:
 		self.dlg = builder.get_object("dialog_actions_list")
 		actions_list_parent = builder.get_object('actions_list_parent')
 		actions_list_parent.add(self._create_list())
+		self._btn_edit = builder.get_object('btn_edit')
+		self._btn_del = builder.get_object('btn_del')
 
 	def _create_list(self):
 		self.store = gtk.ListStore(str, int)
 		self.table = table = gtk.TreeView(self.store)
 		table.connect("row-activated", self.on_action_list_row_activated)
+		table.get_selection().connect("changed", self.on_action_list_move_cursor)
 		cell = gtk.CellRendererText()
 		col = gtk.TreeViewColumn(_("Action"), cell)
 		col.add_attribute(cell, "markup", 0)

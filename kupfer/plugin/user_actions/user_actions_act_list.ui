@@ -57,6 +57,7 @@
                   <object class="GtkButton" id="btn_edit">
                     <property name="label">gtk-edit</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
@@ -72,6 +73,7 @@
                   <object class="GtkButton" id="btn_del">
                     <property name="label">gtk-remove</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
