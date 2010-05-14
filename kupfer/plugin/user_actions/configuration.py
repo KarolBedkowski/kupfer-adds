@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import with_statement
 
-__version__ = "2010-05-13"
+__version__ = "2010-05-14"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 import operator
@@ -22,7 +22,7 @@ class PluginSettings(ExtendedSetting):
 
 	def dialog(self, parent_widget):
 		acts = list(actions.load_actions())
-		dlg = DialogSelectActions()
+		dlg = DialogSelectActions(parent_widget)
 		res = dlg.run(acts)
 		if res:
 			actions.save_actions(acts)
@@ -30,8 +30,8 @@ class PluginSettings(ExtendedSetting):
 
 
 class DialogSelectActions:
-	def __init__(self):
-		self._create_dialog()
+	def __init__(self, parent_widget):
+		self._create_dialog(parent_widget)
 
 	def run(self, actions):
 		self._actions = actions
@@ -91,7 +91,7 @@ class DialogSelectActions:
 		self._btn_del.set_sensitive(record_selected)
 		self._btn_edit.set_sensitive(record_selected)
 
-	def _create_dialog(self):
+	def _create_dialog(self, parent_widget):
 		builder = gtk.Builder()
 		builder.set_translation_domain(version.PACKAGE_NAME)
 		ui_file = config.get_plugin_data_file("user_actions",
@@ -100,6 +100,7 @@ class DialogSelectActions:
 		builder.connect_signals(self)
 
 		self.dlg = builder.get_object("dialog_actions_list")
+		self.dlg.set_transient_for(parent_widget)
 		actions_list_parent = builder.get_object('actions_list_parent')
 		actions_list_parent.add(self._create_list())
 		self._btn_edit = builder.get_object('btn_edit')
