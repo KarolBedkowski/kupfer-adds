@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import with_statement
 
-__version__ = "2010-05-12"
+__version__ = "2010-05-22"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 import re
@@ -146,8 +146,9 @@ def load_actions():
 		if objects_filter:
 			action.objects_filter = [S.strip() for S
 					in objects_filter.split(';')]
-		action.launch_in_terminal = bool(cfgpars.get(section,
-				'launch_in_terminal'))
+		launch_in_terminal = str(cfgpars.get(section, 'launch_in_terminal'))
+		action.launch_in_terminal = (launch_in_terminal.strip().lower()
+				in ('true', 'ok', 'yes', '1'))
 		action.gather_result = cfgpars.get(section, 'gather_result')
 		filters = cfgpars.get(section, 'filters')
 		if filters:
