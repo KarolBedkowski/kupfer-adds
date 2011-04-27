@@ -4,11 +4,15 @@
 auxdata/kupfer.desktop.in
 auxdata/kupfer-exec.desktop.in
 auxdata/kupfer-mimetypes.xml.in
-[type: gettext/glade]data/credentials_dialog.ui
-[type: gettext/glade]data/getkey_dialog.ui
-[type: gettext/glade]data/preferences.ui
-[type: gettext/glade]data/progress_dialog.ui
-[type: gettext/glade]data/result.ui
+[type: gettext/glade] data/preferences.ui
+[type: gettext/glade] data/result.ui
+[type: gettext/glade] data/credentials_dialog.ui
+[type: gettext/glade] data/progress_dialog.ui
+[type: gettext/glade] data/getkey_dialog.ui
+[type: gettext/glade] kupfer/plugin/user_actions/user_actions_act_edit.ui
+[type: gettext/glade] kupfer/plugin/user_actions/user_actions_act_list.ui
+extras/kupfer_provider.py
+
 
 kupfer/core/commandexec.py
 kupfer/core/execfile.py
@@ -116,6 +120,9 @@ kupfer/plugin/top.py
 kupfer/plugin/tracker1.py
 kupfer/plugin/truecrypt.py
 kupfer/plugin/tsclient.py
+kupfer/plugin/user_actions/__init__.py
+kupfer/plugin/user_actions/actions.py
+kupfer/plugin/user_actions/configuration.py
 kupfer/plugin/vim/__init__.py
 kupfer/plugin/vim/plugin.py
 kupfer/plugin/vinagre.py
