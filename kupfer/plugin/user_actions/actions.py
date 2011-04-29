@@ -1,9 +1,10 @@
 # -*- coding: UTF-8 -*-
 from __future__ import with_statement
 
-__version__ = "2010-05-22"
+__version__ = "2011-04-29"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
+import os.path
 import re
 import ConfigParser
 
@@ -11,9 +12,12 @@ from kupfer import pretty
 from kupfer import config
 from kupfer import utils
 from kupfer import kupferstring
-from kupfer import commandexec
 from kupfer.obj import objects
 from kupfer.objects import OperationError, Action, Source
+
+
+# config filename: actions.cfg
+_CONFIG_FILENAME = __name__.split('.')[-1] + '.cfg'
 
 
 class UserAction(Action):
@@ -124,9 +128,10 @@ _ACTION_DEFAULTS = {
 
 def load_actions():
 	"""docstring for load_actions"""
-	config_file = config.get_config_file('user_actions.cfg')
+	config_file = config.get_config_file(_CONFIG_FILENAME)
 	if not config_file:
 		return
+	pretty.print_debug("Loading actions from %s", config_file)
 	cfgpars = ConfigParser.SafeConfigParser(_ACTION_DEFAULTS)
 	cfgpars.read(config_file)
 	for section in cfgpars.sections():
@@ -174,6 +179,14 @@ def save_actions(actions):
 			filters = '|'.join('&'.join(key + '=' + val for key, val
 				in filtetitem.iteritems()) for filtetitem in action.filters)
 			cfgpars.set(action.name, 'filters', filters)
-	config_file = config.save_config_file('user_actions.cfg')
+	config_file = config.save_config_file(_CONFIG_FILENAME)
+	pretty.print_debug("Saving actions to %s", config_file)
 	with open(config_file, 'wb') as configfile:
 		cfgpars.write(configfile)
+
+
+def get_config_file_mtime():
+	config_file = config.get_config_file(_CONFIG_FILENAME)
+	if not config_file:
+		return None
+	return os.path.getmtime(config_file)

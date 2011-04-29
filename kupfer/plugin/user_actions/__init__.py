@@ -4,13 +4,13 @@ from __future__ import with_statement
 __kupfer_name__ = _("User Actions")
 __kupfer_action_generators__ = ("UserActionsGenerator", )
 __description__ = _("User defined actions")
-__version__ = "2010-05-12"
+__version__ = "2011-04-29"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 
 '''
 Allow user to define own actions.
-Example actions (defined in ~/.config/kupfer/user_actions.cfg'):
+Example actions (defined in ~/.config/kupfer/actions.cfg'):
 
 [Download with GWget]
 objects=url,text
@@ -49,15 +49,11 @@ Fields:
 		  object = 12 or objects that have source_name = bar
 '''
 
-import os.path
-
-from kupfer import config
 from kupfer import plugin_support
 from kupfer import pretty
 from kupfer.obj.base import ActionGenerator
 
 from .configuration import PluginSettings
-from .actions import UserAction
 from . import actions
 
 
@@ -79,14 +75,12 @@ class UserActionsGenerator(ActionGenerator, pretty.OutputMixin):
 		self._load()
 
 	def _load(self):
-		config_file = config.get_config_file('user_actions.cfg')
-		if not config_file:
+		config_file_mtime = actions.get_config_file_mtime()
+		if not config_file_mtime:
 			self.output_debug('no config file')
 			return []
-		config_file_mtime = os.path.getmtime(config_file)
 		if self._last_loaded_time >= config_file_mtime:
 			return self._actions
-		self.output_debug('loading actions', config_file)
 		self._last_loaded_time = config_file_mtime
 		self._actions = list(actions.load_actions())
 		return self._actions
