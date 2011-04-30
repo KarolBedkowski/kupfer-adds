@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import with_statement
 
-__version__ = "2011-04-29"
+__version__ = "2011-04-30"
 __author__ = "Karol Będkowski <karol.bedkowski@gmail.com>"
 
 import os.path
@@ -37,7 +37,8 @@ class UserAction(Action):
 	def activate(self, leaf, ctx):
 		argv = utils.argv_for_commandline(self.command)
 		if '$s' in argv:
-			argv[argv.index('$s')] = leaf.object
+			argv = [(leaf.object if arg == '$s' else arg) for arg in argv]
+		pretty.print_debug("activate", argv)
 		if self.gather_result:
 			acom = utils.AsyncCommand(argv, self.finish_callback, 15)
 			acom.token = ctx
