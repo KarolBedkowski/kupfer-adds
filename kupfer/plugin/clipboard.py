@@ -2,9 +2,10 @@ __kupfer_name__ = _("Clipboards")
 __kupfer_sources__ = ("ClipboardSource", )
 __kupfer_actions__ = ("ClearClipboards", )
 __description__ = _("Recent clipboards and clipboard proxy objects")
-__version__ = ""
+__version__ = "2012-06-09"
 __author__ = "Ulrik Sverdrup <ulrik.sverdrup@gmail.com>"
 
+import os
 from collections import deque
 
 import gio
@@ -49,6 +50,15 @@ class SelectedText (TextLeaf):
 	def __repr__(self):
 		return "<%s %s>" % (__name__, self.qf_id)
 
+class SelectedFile (FileLeaf):
+	qf_id = "selectedfile"
+	def __init__(self, path):
+		FileLeaf.__init__(self, path, _('Selected Directory')
+				if os.path.isdir(path) else _('Selected File'))
+
+	def __repr__(self):
+		return "<%s %s>" % (__name__, self.qf_id)
+
 class ClipboardText (TextLeaf):
 	def get_description(self):
 		numlines = self.object.count("\n") + 1
@@ -57,6 +67,9 @@ class ClipboardText (TextLeaf):
 		return ngettext('Clipboard "%(desc)s"',
 			'Clipboard with %(num)d lines "%(desc)s"',
 			numlines) % {"num": numlines, "desc": desc }
+
+class ClipboardFile (FileLeaf):
+	pass
 
 class CurrentClipboardText (ClipboardText):
 	qf_id = "clipboardtext"
@@ -174,10 +187,13 @@ class ClipboardSource (Source):
 	def get_items(self):
 		# selected text
 		if self.selected_text:
-			yield SelectedText(self.selected_text)
+			if is_file(self.selected_text):
+				yield SelectedFile(os.path.expanduser(self.selected_text))
+			else:
+				yield SelectedText(self.selected_text)
 
 		# produce the current clipboard files if any
-		paths = filter(None, 
+		paths = filter(None,
 		        [gio.File(uri=uri).get_path() for uri in self.clipboard_uris])
 		if len(paths) == 1:
 			yield CurrentClipboardFile(paths[0])
@@ -185,11 +201,19 @@ class ClipboardSource (Source):
 			yield CurrentClipboardFiles(paths)
 
 		# put out the current clipboard text
-		if self.clipboard_text:
-			yield CurrentClipboardText(self.clipboard_text)
+		if self.clipboard_text and self.clipboard_text != self.selected_text:
+			if is_file(self.clipboard_text):
+				yield CurrentClipboardFile(self.clipboard_text)
+			else:
+				yield CurrentClipboardText(self.clipboard_text)
 		# put out the clipboard history
 		for t in reversed(self.clipboards):
-			yield ClipboardText(t)
+			if t == self.clipboard_text or t == self.selected_text:
+				continue
+			if is_file(t):
+				yield ClipboardFile(os.path.expanduser(t))
+			else:
+				yield ClipboardText(t)
 
 	def get_description(self):
 		return __description__
@@ -205,3 +229,7 @@ class ClipboardSource (Source):
 	def clear(self):
 		self.clipboards.clear()
 		self.mark_for_update()
+
+
+def is_file(path):
+	return os.path.exists(os.path.expanduser(path))
