@@ -30,7 +30,7 @@ class GnomeItemsSource (support.CommonSource):
 		support.CommonSource.__init__(self, _("GNOME Session Management"))
 	def get_items(self):
 		return (
-			support.Logout(LOGOUT_CMD),
+			support.LogoutBrowse(LOGOUT_CMD),
 			support.LockScreen(LOCKSCREEN_CMD),
-			support.Shutdown(SHUTDOWN_CMD),
+			support.ShutdownBrowse(SHUTDOWN_CMD),
 		)
