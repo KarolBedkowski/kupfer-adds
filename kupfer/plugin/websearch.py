@@ -175,25 +175,25 @@ class OpenSearchSource (Source):
 		plugin_dirs.extend(config.get_data_dirs("searchplugins",
 			package="iceweasel"))
 
-		addon_dir = "/usr/lib/firefox-addons/searchplugins"
 		cur_lang, _ignored = locale.getlocale(locale.LC_MESSAGES)
 		suffixes = ["en-US"]
 		if cur_lang:
 			suffixes = [cur_lang.replace("_", "-"), cur_lang[:2]] + suffixes
-		for suffix in suffixes:
-			addon_lang_dir = os.path.join(addon_dir, suffix)
-			if os.path.exists(addon_lang_dir):
-				plugin_dirs.append(addon_lang_dir)
-				break
+
+		addon_dirs = ["/usr/lib/firefox-addons/searchplugins",
+				"/usr/lib/firefox/searchplugins",
+				"/usr/lib/firefox/distribution/searchplugins/locale",
+				"/etc/iceweasel/searchplugins/locale"]
+
+		for addon_dir in addon_dirs:
+			for suffix in suffixes:
+				addon_lang_dir = os.path.join(addon_dir, suffix)
+				if os.path.exists(addon_lang_dir):
+					plugin_dirs.append(addon_lang_dir)
 
 		# debian iceweasel
 		if os.path.isdir("/etc/iceweasel/searchplugins/common"):
 			plugin_dirs.append("/etc/iceweasel/searchplugins/common")
-		for suffix in suffixes:
-			addon_dir = os.path.join("/etc/iceweasel/searchplugins/locale",
-					suffix)
-			if os.path.isdir(addon_dir):
-				plugin_dirs.append(addon_dir)
 
 		# try to find all versions of firefox
 		for dirname in os.listdir("/usr/lib/"):
