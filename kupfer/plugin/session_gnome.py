@@ -1,4 +1,4 @@
-# -*- coding: UTF8 -*-
+# -*- coding: utf-8 -*-
 __kupfer_name__ = _("GNOME Session Management")
 __kupfer_sources__ = ("GnomeItemsSource", )
 __description__ = _("Special items and actions for GNOME environment")
@@ -34,4 +34,3 @@ class GnomeItemsSource (support.CommonSource):
 			support.LockScreen(LOCKSCREEN_CMD),
 			support.Shutdown(SHUTDOWN_CMD),
 		)
-

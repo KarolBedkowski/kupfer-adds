@@ -1,4 +1,4 @@
-# -*- coding: UTF8 -*-
+# -*- coding: utf-8 -*-
 __kupfer_name__ = _("Rhythmbox")
 __kupfer_sources__ = ("RhythmboxSource", )
 __description__ = _("Play and enqueue tracks and browse the music library")
