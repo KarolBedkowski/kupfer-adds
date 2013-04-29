@@ -217,14 +217,12 @@ class CommandTextSource (TextSource):
 		TextSource.__init__(self, name=_("Shell Commands"))
 
 		# get bash aliases and functions
-		bash_cmds = [u'shopt -s expand_aliases', u'source /etc/bash.bashrc']
-		bashrc_path = u'%s/.bashrc' % (format(os.path.expanduser(u'~')),)
-		bash_cmds.append(u' '.join((u'source', quote(bashrc_path))))
-		self._bash_cmds = bash_cmds = u';'.join(bash_cmds) + '\n'
-
+		bash_cmds = [u'shopt -s expand_aliases', u'source /etc/bash.bashrc',
+				u'source ' + quote(format(os.path.expanduser(u'~/.bashrc')))]
+		self._bash_cmds = bash_cmds = u';'.join(bash_cmds) + ";"
 		# get alias names
 		try:
-			lines = check_output(('bash', '-c', bash_cmds + u'alias'))
+			lines = check_output(('bash', '-i', '-c', bash_cmds + u'alias'))
 		except OSError:
 			# no bash
 			pass
@@ -237,10 +235,9 @@ class CommandTextSource (TextSource):
 				if word and '=' in word:
 					# reduce to name
 					aliases.append(word[:word.find('=')])
-
 		# get function names
 		try:
-			lines = check_output(('bash', '-c', bash_cmds + u'declare -F'))
+			lines = check_output(('bash', '-i', '-c', bash_cmds + u'declare -F'))
 		except OSError:
 			# no bash
 			pass
@@ -276,7 +273,7 @@ class CommandTextSource (TextSource):
 		if (__kupfer_settings__["aliases"] and firstword in self._aliases) or \
 		   (__kupfer_settings__["functions"] and firstword in self._fns):
 			cmds = self._bash_cmds + u" ".join(firstwords)
-			yield BashCommand(u'bash -c %s' % quote(cmds), text)
+			yield BashCommand('bash -i -c '+ quote(cmds), text)
 		# iterate over $PATH directories
 		PATH = os.environ.get("PATH", os.defpath)
 		for execdir in PATH.split(os.pathsep):
