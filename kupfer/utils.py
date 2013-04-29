@@ -108,7 +108,7 @@ class AsyncCommand (object):
 	# the maximum input (bytes) we'll read in one shot (one io_callback)
 	max_input_buf = 512 * 1024
 
-	def __init__(self, argv, finish_callback, timeout_s, stdin=None, env=None):
+	def __init__(self, argv, finish_callback, timeout_s, stdin=None, env=""):
 		self.stdout = []
 		self.stderr = []
 		self.stdin = []
