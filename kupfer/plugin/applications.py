@@ -17,13 +17,16 @@ from kupfer.objects import Action, Source, AppLeaf, FileLeaf
 from kupfer.obj.helplib import FilesystemWatchMixin
 from kupfer import config, plugin_support
 
+
+UNIVERSAL_ENV = _("<Universal>")
 __kupfer_settings__ = plugin_support.PluginSettings(
 	{
 		"key" : "desktop_type",
 		"label": _("Applications for Desktop Environment"),
 		"type": str,
-		"value": "GNOME",
-		"alternatives": ("GNOME", "KDE", "LXDE", "ROX", "XFCE")
+		"value": UNIVERSAL_ENV,
+		"alternatives": (UNIVERSAL_ENV, "GNOME", "KDE", "LXDE", "ROX", "XFCE",
+				"Unity", "MATE")
 	},
 )
 
@@ -46,7 +49,8 @@ class AppSource (Source, FilesystemWatchMixin):
 		# We get exactly the apps shown in the menu,
 		# as well as the preference panes
 		desktop_type = __kupfer_settings__["desktop_type"]
-		desktop_app_info_set_desktop_env(desktop_type)
+		show_all = desktop_type == UNIVERSAL_ENV
+		desktop_app_info_set_desktop_env("" if show_all else desktop_type)
 		# Add this to the default
 		whitelist = set([
 			# if you set/reset default handler for folders it is useful
@@ -64,7 +68,8 @@ class AppSource (Source, FilesystemWatchMixin):
 
 		for item in app_info_get_all():
 			id_ = item.get_id()
-			if id_ in whitelist or (item.should_show() and not id_ in blacklist):
+			if id_ in whitelist or ((show_all or item.should_show())
+					and not id_ in blacklist):
 				yield AppLeaf(item)
 
 	def should_sort_lexically(self):
