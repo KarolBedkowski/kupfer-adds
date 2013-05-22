@@ -16,8 +16,8 @@ __kupfer_settings__ = PluginSettings(
 		"type": str,
 		"value": ""
 	}, {
-		"key": "switchuser",
-		"label": _("Switch user"),
+		"key": "changeuser",
+		"label": _("Change user"),
 		"type": str,
 		"value": ""
 	}, {
@@ -50,7 +50,7 @@ class ItemSource (support.CommonSource):
 		support.CommonSource.__init__(self, _("Custom Session Management"))
 
 	def get_items(self):
-		for item in ("Logout", "SwitchUser", "LockScreen", "Shutdown",
+		for item in ("Logout", "ChangeUser", "LockScreen", "Shutdown",
 					 "Reboot", "Suspend"):
 			value = __kupfer_settings__[item.lower()].strip()
 			if value:

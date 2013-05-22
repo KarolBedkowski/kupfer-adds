@@ -49,8 +49,8 @@ class Logout (CommandLeaf):
 		return "system-log-out"
 
 
-class SwitchUser (CommandLeaf):
-	"""Switch user"""
+class ChangeUser (CommandLeaf):
+	"""Change (switch) user"""
 	def __init__(self, commands, name=None):
 		if not name: name = _("Change User")
 		CommandLeaf.__init__(self, commands, name)
