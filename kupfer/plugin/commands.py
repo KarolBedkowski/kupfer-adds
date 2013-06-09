@@ -222,7 +222,7 @@ class CommandTextSource (TextSource):
 		self._bash_cmds = bash_cmds = u';'.join(bash_cmds) + ";"
 		# get alias names
 		try:
-			lines = check_output(('bash', '-i', '-c', bash_cmds + u'alias'))
+			lines = check_output(('setsid', 'bash', '-i', '-c', bash_cmds + u'alias'))
 		except OSError:
 			# no bash
 			pass
@@ -237,7 +237,7 @@ class CommandTextSource (TextSource):
 					aliases.append(word[:word.find('=')])
 		# get function names
 		try:
-			lines = check_output(('bash', '-i', '-c', bash_cmds + u'declare -F'))
+			lines = check_output(('setsid', 'bash', '-i', '-c', bash_cmds + u'declare -F'))
 		except OSError:
 			# no bash
 			pass
