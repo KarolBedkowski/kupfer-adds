@@ -14,6 +14,7 @@ import gobject
 
 from kupfer import pretty, version
 
+
 class SessionClient (gobject.GObject, pretty.OutputMixin):
 	"""Session handling controller
 
@@ -28,14 +29,26 @@ class SessionClient (gobject.GObject, pretty.OutputMixin):
 		gobject.GObject.__init__(self)
 
 		succ = False
+		# environment name for Gnome-like session manages (gnome, mate)
+		self._session_manager_name = None
 		try:
 			succ = self._connect_session_manager()
+			if succ:
+				self._session_manager_name = 'gnome'
 		except dbus.DBusException, exc:
 			self.output_error(exc)
 		if not succ:
 			# try to bind to xfce session manager
 			try:
 				succ = self._connect_xfce_session_manager()
+			except dbus.DBusException, exc:
+				self.output_error(exc)
+		if not succ:
+			# try to bind to mate session manager
+			try:
+				succ = self._connect_mate_session_manager()
+				if succ:
+					self._session_manager_name = 'mate'
 			except dbus.DBusException, exc:
 				self.output_error(exc)
 		if not succ:
@@ -121,13 +134,59 @@ class SessionClient (gobject.GObject, pretty.OutputMixin):
 		private_iface_name = "org.xfce.Session.Manager"
 		bus.add_signal_receiver(self._xfce_session_state_changed, "StateChanged",
 				dbus_interface=private_iface_name)
+		self.output_debug("Successfully connected to XFCE Session Manage")
+		return True
+
+	def _connect_mate_session_manager(self):
+		bus = dbus.SessionBus()
+		proxy_obj = bus.get_object('org.freedesktop.DBus',
+				'/org/freedesktop/DBus')
+		dbus_iface = dbus.Interface(proxy_obj, 'org.freedesktop.DBus')
+		service_name = "org.mate.SessionManager"
+		obj_name = "/org/mate/SessionManager"
+		iface_name = service_name
+
+		if not dbus_iface.NameHasOwner(service_name):
+			self.output_debug("D-Bus name %s not found" % service_name)
+			return False
+
+		try:
+			obj = bus.get_object(service_name, obj_name)
+		except dbus.DBusException, e:
+			pretty.print_error(__name__, e)
+			return False
+		smanager = dbus.Interface(obj, iface_name)
+
+		app_id = version.PACKAGE_NAME
+		startup_id = os.getenv("DESKTOP_AUTOSTART_ID") or ""
+		self.client_id = smanager.RegisterClient(app_id, startup_id)
+		self._session_ended = False
+		self.output_debug("Connected to session as client",
+				self.client_id, startup_id)
+
+		private_iface_name = "org.mate.SessionManager.ClientPrivate"
+		bus.add_signal_receiver(self._query_end_session, "QueryEndSession",
+				dbus_interface=private_iface_name)
+		bus.add_signal_receiver(self._end_session_signal, "EndSession",
+				dbus_interface=private_iface_name)
+		bus.add_signal_receiver(self._stop_signal, "Stop",
+				dbus_interface=private_iface_name)
+		self.output_debug("Successfully connected to Mate Session Manage")
 		return True
 
 	def _get_response_obj(self):
 		"""Return D-Bus session object for ClientPrivate Interface"""
-		service_name = "org.gnome.SessionManager"
 		obj_name = self.client_id
-		iface_name = "org.gnome.SessionManager.ClientPrivate"
+		if self._session_manager_name == 'gnome':
+			service_name = "org.gnome.SessionManager"
+			iface_name = "org.gnome.SessionManager.ClientPrivate"
+		elif self._session_manager_name == 'mate':
+			service_name = "org.mate.SessionManager"
+			iface_name = "org.mate.SessionManager.ClientPrivate"
+		else:
+			self.output_error("_get_response_obj: unknown session manager",
+					self._session_manager_name)
+			return None
 
 		try:
 			bus = dbus.Bus()
