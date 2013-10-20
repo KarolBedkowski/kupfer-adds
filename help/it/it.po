@@ -663,7 +663,7 @@ msgid ""
 "kaizer.se/wiki/kupfer/\">homepage</link>."
 msgstr ""
 "Per maggiori informazioni su <app>Kupfer</app>, visita la sua <link href="
-"\"http://kaizer.se/wiki/kupfer/\">pagina web</link>."
+"\"http://engla.github.io/kupfer/\">pagina web</link>."
 
 #: C/index.page:9(name)
 msgid "Ulrik Sverdrup"

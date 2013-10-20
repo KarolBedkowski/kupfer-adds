@@ -97,7 +97,7 @@
       Documentation for plugin creators is available in the file
       <code>Documentation/Manual.rst</code> in the source distribution on
       the webpage at
-      <link href="http://kaizer.se/wiki/kupfer/Manual/">Kupfer Manual</link>.
+      <link href="http://engla.github.io/kupfer/help/">Kupfer Manual</link>.
 
       An easy way to start is to copy an existing plugin and experimenting
       with it.

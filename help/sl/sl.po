@@ -704,8 +704,8 @@ msgid "Creating Plugins"
 msgstr "Ustvarjanje vstavkov"
 
 #: C/managing-plugins.page:96(p)
-msgid "Documentation for plugin creators is available in the file <code>Documentation/Manual.rst</code> in the source distribution on the webpage at <link href=\"http://kaizer.se/wiki/kupfer/Manual/\">Kupfer Manual</link>. An easy way to start is to copy an existing plugin and experimenting with it."
-msgstr "Dokumentacija za ustvarjalce vstavkov je na voljo v datoteki <code>Documentation/Manual.rst</code> v izvorni distribuciji na spletni strani <link href=\"http://kaizer.se/wiki/kupfer/Manual/\">priročnika Kupfer</link>. Enostaven način za začetek je kopiranje obstoječega vstavka in njegovo preizkušanje."
+msgid "Documentation for plugin creators is available in the file <code>Documentation/Manual.rst</code> in the source distribution on the webpage at <link href=\"http://engla.github.io/kupfer/help/\">Kupfer Manual</link>. An easy way to start is to copy an existing plugin and experimenting with it."
+msgstr "Dokumentacija za ustvarjalce vstavkov je na voljo v datoteki <code>Documentation/Manual.rst</code> v izvorni distribuciji na spletni strani <link href=\"http://engla.github.io/kupfer/help/\">priročnika Kupfer</link>. Enostaven način za začetek je kopiranje obstoječega vstavka in njegovo preizkušanje."
 
 #: C/managing-plugins.page:107(title)
 msgid "The <em>Catalog</em> Tab in Preferences"
@@ -1069,8 +1069,8 @@ msgid "We hope that using <app>Kupfer</app> feels both <em>very fun</em> and <em
 msgstr "Upamo, da se vam zdi uporaba <app>Kupferja</app> tako <em>zelo zabavna</em> kot <em>drugačna</em>."
 
 #: C/introduction.page:26(p)
-msgid "For up-to-date information about <app>Kupfer</app>, visit its <link href=\"http://kaizer.se/wiki/kupfer/\">homepage</link>."
-msgstr "Za več podrobnosti o programu <app>Kupfer</app> obiščite njegovo <link href=\"http://kaizer.se/wiki/kupfer/\">domačo stran</link>."
+msgid "For up-to-date information about <app>Kupfer</app>, visit its <link href=\"http://engla.github.io/kupfer/\">homepage</link>."
+msgstr "Za več podrobnosti o programu <app>Kupfer</app> obiščite njegovo <link href=\"http://engla.github.io/kupfer/\">domačo stran</link>."
 
 #: C/index.page:9(name)
 msgid "Ulrik Sverdrup"
