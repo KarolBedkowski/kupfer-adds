@@ -165,7 +165,7 @@ class CreateZimQuickNote(Action):
 			pretty.print_debug(__name__, "CreateZimQuickNote.finish_callback", acommand,
 					stdout, stderr)
 
-		utils.AsyncCommand(argv, finish_callback, None, stdin=text)
+		self._cmd = utils.AsyncCommand(argv, finish_callback, None, stdin=text)
 
 
 class OpenZimPage(Action):
