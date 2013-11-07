@@ -120,6 +120,9 @@ class AsyncCommand (object):
 		argv = _argv_to_locale(argv)
 		pretty.print_debug(__name__, "AsyncCommand:", argv)
 
+		# get default environment var if not given
+		env = env or ['='.join(kv) for kv in os.environ.iteritems()]
+
 		flags = (glib.SPAWN_SEARCH_PATH | glib.SPAWN_DO_NOT_REAP_CHILD)
 		pid, stdin_fd, stdout_fd, stderr_fd = \
 		     glib.spawn_async(argv, standard_output=True, standard_input=True,
