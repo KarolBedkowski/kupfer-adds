@@ -161,16 +161,26 @@ class UserNamePassword (settings.ExtendedSetting):
 	@classmethod
 	def is_backend_encrypted(cls):
 		import keyring.core
-		return keyring.core.get_keyring().supported() == 1
+		kring = keyring.core.get_keyring()
+		return (hasattr(keyring, 'supported') and
+				keyring.core.get_keyring().supported() == 1)
 
 	@classmethod
 	def get_backend_name(cls):
 		import keyring.core
-		import keyring.backend
+		try:
+			from keyring.backend.GnomeKeyring import Keyring as GnomeKeyring
+			from keyring.backend.kwallet import Keyring as KDEKWallet
+			from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
+		except ImportError:
+			from keyring.backend import GnomeKeyring
+			from keyring.backend import KDEKWallet
+			from keyring.backend import UncryptedFileKeyring
+
 		keyring_map = {
-				keyring.backend.GnomeKeyring : _("GNOME Keyring"),
-				keyring.backend.KDEKWallet : _("KWallet"),
-				keyring.backend.UncryptedFileKeyring: _("Unencrypted File"),
+				GnomeKeyring: _("GNOME Keyring"),
+				KDEKWallet: _("KWallet"),
+				UncryptedFileKeyring: _("Unencrypted File"),
 			}
 		kr = keyring.get_keyring()
 		keyring_name = keyring_map.get(type(kr), type(kr).__name__)
@@ -209,10 +219,13 @@ def check_keyring_support():
 		raise
 	else:
 		# Configure the fallback keyring's configuration file if used
-		import keyring.backend
 		kr = keyring.get_keyring()
 		if hasattr(kr, "crypted_password"):
-			keyring.set_keyring(keyring.backend.UncryptedFileKeyring())
+			try:
+				from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
+			except ImportError:
+				from keyring.backend import UncryptedFileKeyring
+			keyring.set_keyring(UncryptedFileKeyring())
 			kr = keyring.get_keyring()
 		if hasattr(kr, "file_path"):
 			kr.file_path = config.save_config_file("keyring.cfg")
@@ -325,5 +338,3 @@ def _unregister_alternative(caller, category_key, full_id_):
 	setctl._update_alternatives(category_key, _alternatives[category_key],
 	                            alt["filter"])
 	return True
-
-
