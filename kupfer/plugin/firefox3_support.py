@@ -32,6 +32,8 @@ def get_bookmarks(bookmarks_file):
 			bmap[id_]["tags"] = []
 		else:
 			print "Already in, gets tag:", tag
+			if isinstance(bmap[id_]["tags"], (str, unicode)):
+				bmap[id_]["tags"] = bmap[id_]["tags"].split(",")
 		bmap[id_]["tags"].append(tag)
 
 	MOZ_CONTAINER = "text/x-moz-place-container"
