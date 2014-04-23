@@ -168,20 +168,37 @@ class UserNamePassword (settings.ExtendedSetting):
 	@classmethod
 	def get_backend_name(cls):
 		import keyring.core
+		GnomeKeyring = None
 		try:
 			from keyring.backend.GnomeKeyring import Keyring as GnomeKeyring
+		except ImportError:
+			try:
+				from keyring.backend import GnomeKeyring
+			except ImportError:
+				try:
+					from keyring.backends.Gnome import Keyring as GnomeKeyring
+				except ImportError:
+					pretty.print_error(__name__, "GnomeKeyring not found")
+		KDEKWallet = None
+		try:
 			from keyring.backend.kwallet import Keyring as KDEKWallet
+		except ImportError:
+			try:
+				from keyring.backend import KDEKWallet
+			except ImportError:
+				pretty.print_error(__name__, "KDEKWallet not found")
+		try:
 			from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
 		except ImportError:
-			from keyring.backend import GnomeKeyring
-			from keyring.backend import KDEKWallet
 			from keyring.backend import UncryptedFileKeyring
 
 		keyring_map = {
-				GnomeKeyring: _("GNOME Keyring"),
-				KDEKWallet: _("KWallet"),
 				UncryptedFileKeyring: _("Unencrypted File"),
 			}
+		if GnomeKeyring is not None:
+			keyring_map[GnomeKeyring] = _("GNOME Keyring")
+		if KDEKWallet is not None:
+			keyring_map[KDEKWallet] = _("KWallet"),
 		kr = keyring.get_keyring()
 		keyring_name = keyring_map.get(type(kr), type(kr).__name__)
 		return keyring_name
