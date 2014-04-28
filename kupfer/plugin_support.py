@@ -2,8 +2,6 @@ import sys
 
 import gobject
 
-keyring = None
-
 from kupfer import pretty
 from kupfer import config
 from kupfer.core import settings
@@ -160,57 +158,22 @@ class UserNamePassword (settings.ExtendedSetting):
 
 	@classmethod
 	def is_backend_encrypted(cls):
-		import keyring.core
-		kring = keyring.core.get_keyring()
-		return (hasattr(keyring, 'supported') and
-				keyring.core.get_keyring().supported() == 1)
+		kring = get_keyring()
+		return hasattr(kring, 'supported') and kring.supported() == 1
 
 	@classmethod
 	def get_backend_name(cls):
-		import keyring.core
-		GnomeKeyring = None
-		try:
-			from keyring.backend.GnomeKeyring import Keyring as GnomeKeyring
-		except ImportError:
-			try:
-				from keyring.backend import GnomeKeyring
-			except ImportError:
-				try:
-					from keyring.backends.Gnome import Keyring as GnomeKeyring
-				except ImportError:
-					pretty.print_error(__name__, "GnomeKeyring not found")
-		KDEKWallet = None
-		try:
-			from keyring.backend.kwallet import Keyring as KDEKWallet
-		except ImportError:
-			try:
-				from keyring.backend import KDEKWallet
-			except ImportError:
-				pretty.print_error(__name__, "KDEKWallet not found")
-		try:
-			from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
-		except ImportError:
-			from keyring.backend import UncryptedFileKeyring
-
-		keyring_map = {
-				UncryptedFileKeyring: _("Unencrypted File"),
-			}
-		if GnomeKeyring is not None:
-			keyring_map[GnomeKeyring] = _("GNOME Keyring")
-		if KDEKWallet is not None:
-			keyring_map[KDEKWallet] = _("KWallet"),
-		kr = keyring.get_keyring()
-		keyring_name = keyring_map.get(type(kr), type(kr).__name__)
-		return keyring_name
+		get_keyring()
+		return _KEYRING_NAME
 
 	def load(self, plugin_id, key, username):
-		self.password = keyring.get_password(plugin_id, username)
+		self.password = get_keyring().get_password(plugin_id, username)
 		self.username = username
 
 	def save(self, plugin_id, key):
 		''' save @user_password - store password in keyring and return username
 		to save in standard configuration file '''
-		keyring.set_password(plugin_id, str(self.username), self.password)
+		get_keyring().set_password(plugin_id, str(self.username), self.password)
 		return self.username
 
 def check_keyring_support():
@@ -218,38 +181,112 @@ def check_keyring_support():
 	Check if the UserNamePassword class can be used,
 	else raise ImportError with an explanatory error message.
 	"""
-	global keyring
-	# if gnomekeyring exists, block kde libraries
-	old_pykde4 = sys.modules.get('PyKDE4')
 	try:
-		import gnomekeyring
-	except ImportError:
-		pass
-	else:
-		sys.modules['PyKDE4'] = None
-	try:
-		import keyring
+		get_keyring()
 	except ImportError:
 		global UserNamePassword
 		class UserNamePassword (object):
 			pass
 		raise
-	else:
-		# Configure the fallback keyring's configuration file if used
+
+
+_KEYRING_NAME = None
+_KEYRING = None
+
+
+def get_keyring():
+	""" Get one of working keyrings. """
+	global _KEYRING
+	if _KEYRING is not None:  # keyring configured
+		return _KEYRING
+	global _KEYRING_NAME
+	try:
+		import gnomekeyring
+		if gnomekeyring.is_available():
+			# create fake keyring as long way by keyring module not work without
+			# gi.
+			class FakeGnomeKeyring:
+				""" Proxy class emulate standard interface for Gnome Keyring. """
+				@staticmethod
+				def get_password(plugin_id, username):
+					kr_name = gnomekeyring.get_default_keyring_sync()
+					for id_ in gnomekeyring.list_item_ids_sync(kr_name):
+						attrs = gnomekeyring.item_get_attributes_sync(kr_name,
+								id_)
+						if (attrs.get('plugin_id') == plugin_id
+								and attrs.get('username') == username):
+							return gnomekeyring.item_get_info_sync(kr_name,
+									id_).get_secret()
+
+				@staticmethod
+				def set_password(plugin_id, username, password):
+					kr_name = gnomekeyring.get_default_keyring_sync()
+					attrs = {'username': username, 'plugin_id': plugin_id}
+					gnomekeyring.item_create_sync(kr_name,
+							gnomekeyring.ITEM_GENERIC_SECRET,
+							_("Password for %s in %s (Kupfer)") % (username,
+								plugin_id),
+							attrs, password, True)
+
+				@staticmethod
+				def supported():
+					return 1
+
+			_KEYRING = FakeGnomeKeyring
+			_KEYRING_NAME = _("GNOME Keyring")
+			return _KEYRING
+	except ImportError:
+		pass
+
+	import keyring
+	import keyring.backends
+	kr = None
+	try:
+		from keyring.backend.GnomeKeyring import Keyring
+		kr = Keyring()
+	except ImportError:
+		try:
+			from keyring.backend import GnomeKeyring
+			kr = GnomeKeyring()
+		except ImportError:
+			pretty.print_error(__name__, "GnomeKeyring not found")
+
+	if kr:
+		keyring.set_keyring(kr)
+		_KEYRING_NAME = _("GNOME Keyring")
+		_KEYRING = kr
+		return kr
+
+	try:
+		from keyring.backend.kwallet import Keyring
+		kr = Keyring()
+	except ImportError:
+		try:
+			from keyring.backend import KDEKWallet
+			kr = KDEKWallet()
+		except ImportError:
+			pretty.print_error(__name__, "KDEKWallet not found")
+
+	if kr:
+		keyring.set_keyring(kr)
+		_KEYRING_NAME = _("KWallet")
+		_KEYRING = kr
+		return kr
+
+	kr = keyring.get_keyring()
+	if hasattr(kr, "crypted_password"):
+		UncryptedFileKeyring = None
+		try:
+			from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
+		except ImportError:
+			from keyring.backend import UncryptedFileKeyring
+		keyring.set_keyring(UncryptedFileKeyring())
 		kr = keyring.get_keyring()
-		if hasattr(kr, "crypted_password"):
-			try:
-				from keyring.backends.file import PlaintextKeyring as UncryptedFileKeyring
-			except ImportError:
-				from keyring.backend import UncryptedFileKeyring
-			keyring.set_keyring(UncryptedFileKeyring())
-			kr = keyring.get_keyring()
-		if hasattr(kr, "file_path"):
-			kr.file_path = config.save_config_file("keyring.cfg")
-	finally:
-		# now unblock kde libraries again
-		if old_pykde4:
-			sys.modules['PyKDE4'] = old_pykde4
+	if hasattr(kr, "file_path"):
+		kr.file_path = config.save_config_file("keyring.cfg")
+	_KEYRING_NAME = _("Unencrypted File")
+	_KEYRING = kr
+	return kr
 
 
 def _plugin_configuration_error(plugin, err):
