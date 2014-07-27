@@ -27,6 +27,12 @@ __kupfer_settings__ = plugin_support.PluginSettings(
 		"type": bool,
 		"value": True,
 	},
+	{
+		"key": "load_tags",
+		"label": _("Include tags"),
+		"type": bool,
+		"value": True,
+	},
 )
 
 
@@ -80,10 +86,10 @@ class BookmarksSource (AppLeafContentMixin, Source, FilesystemWatchMixin):
 			with closing(sqlite3.connect(fpath, timeout=1)) as conn:
 				c = conn.cursor()
 				c.execute("""SELECT DISTINCT(url), title
-				             FROM moz_places
-				             ORDER BY visit_count DESC
-				             LIMIT ?""",
-				             (max_history_items,))
+							 FROM moz_places
+							 ORDER BY visit_count DESC
+							 LIMIT ?""",
+							 (max_history_items,))
 				return [UrlLeaf(url, title) for url, title in c]
 		except sqlite3.Error:
 			# Something is wrong with the database
@@ -96,8 +102,9 @@ class BookmarksSource (AppLeafContentMixin, Source, FilesystemWatchMixin):
 		bookmarks, tags = firefox3_support.get_bookmarks(fpath)
 		for book in bookmarks:
 			yield UrlLeaf(book["uri"], book["title"] or book["uri"])
-		for tag, items in tags.iteritems():
-			yield Tag(tag, items)
+		if __kupfer_settings__['load_tags']:
+			for tag, items in tags.iteritems():
+				yield Tag(tag, items)
 
 	def _get_ffx2_bookmarks(self, fpath):
 		"""Parse Firefox' bookmarks.html"""
