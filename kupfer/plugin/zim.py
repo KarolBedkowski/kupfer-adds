@@ -309,14 +309,15 @@ def _read_zim_notebooks_new(zim_notebooks_file):
 		for line in notebooks_file:
 			line = line.strip()
 			if line.startswith("["):
-				if line == '[Notebook]':
+				if line == '[Notebook]' or line.startswith('[Notebook '):
 					notebooks.append(dict())
 				last_section = line
 				continue
 			if not line:
 				last_section = None
 				continue
-			if last_section == '[Notebook]':
+			if last_section == '[Notebook]' or \
+					last_section.startswith('[Notebook '):
 				if '=' in line:
 					key, val = line.split('=', 1)
 					notebooks[-1][key] = val
