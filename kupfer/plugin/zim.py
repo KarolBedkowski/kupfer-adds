@@ -304,23 +304,15 @@ def _read_zim_notebooks_new(zim_notebooks_file):
 	@notebook_path: Filesystem byte string
 	'''
 	notebooks = []
-	last_section = None
 	with open(zim_notebooks_file, 'r') as notebooks_file:
 		for line in notebooks_file:
 			line = line.strip()
-			if line.startswith("["):
-				if line == '[Notebook]' or line.startswith('[Notebook '):
-					notebooks.append(dict())
-				last_section = line
-				continue
-			if not line:
-				last_section = None
-				continue
-			if last_section == '[Notebook]' or \
-					last_section.startswith('[Notebook '):
-				if '=' in line:
-					key, val = line.split('=', 1)
-					notebooks[-1][key] = val
+			if line.startswith('[') and line != '[NotebookList]':
+				notebooks.append(dict())
+			if notebooks and '=' in line:
+				key, val = line.split('=', 1)
+				notebooks[-1][key] = val
+
 	for notebook in notebooks:
 		uri = notebook.get('uri')
 		if not uri:
