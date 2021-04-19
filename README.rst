@@ -1,3 +1,6 @@
+**This is old / not maintained version**
+**Current version** -> https://github.com/kupferlauncher/kupfer
+
 kupfer is a simple, flexible launcher for GNOME
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
